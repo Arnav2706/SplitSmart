@@ -251,7 +251,7 @@ class _ExpensesTab extends StatelessWidget {
                             maxLines: 1, overflow: TextOverflow.ellipsis),
                         const SizedBox(height: 2),
                         Text(
-                          'Paid by ${exp.paidBy == 'local_user' ? 'You' : exp.paidBy.substring(0, 5)} • ${exp.date.day}/${exp.date.month}',
+                          'Paid by ${exp.paidBy == 'local_user' ? 'You' : (exp.paidBy.length > 5 ? exp.paidBy.substring(0, 5) : exp.paidBy)} • ${exp.date.day}/${exp.date.month}',
                           style: Theme.of(context).textTheme.bodySmall?.copyWith(color: NeonTheme.onSurfaceVariant),
                         ),
                       ],

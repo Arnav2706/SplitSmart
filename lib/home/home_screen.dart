@@ -102,6 +102,7 @@ class _HomeScreenState extends State<HomeScreen> {
         showModalBottomSheet(
           context: context,
           backgroundColor: Colors.transparent,
+          isScrollControlled: true,
           builder: (_) => _GroupActionSheet(user: user, firestore: firestore),
         );
       },
@@ -310,114 +311,116 @@ class _GroupActionSheetState extends State<_GroupActionSheet> {
             left: 24, right: 24, top: 16,
             bottom: MediaQuery.of(context).viewInsets.bottom + 40,
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(width: 40, height: 4,
-                  decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2))),
-              const SizedBox(height: 20),
-              if (!_showCreate && !_showJoin) ...[
-                Text('ADD A GROUP', style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    color: NeonTheme.onSurfaceVariant, letterSpacing: 2)),
-                const SizedBox(height: 24),
-                SizedBox(
-                  width: double.infinity,
-                  child: NeonButton(
-                    isPrimary: true,
-                    onPressed: () => setState(() => _showCreate = true),
-                    child: const Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                      Icon(Icons.group_add),
-                      SizedBox(width: 10),
-                      Text('Create New Group', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                    ]),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                SizedBox(
-                  width: double.infinity,
-                  child: NeonButton(
-                    isPrimary: false,
-                    onPressed: () => setState(() => _showJoin = true),
-                    child: const Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                      Icon(Icons.login),
-                      SizedBox(width: 10),
-                      Text('Join with Invite Code', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                    ]),
-                  ),
-                ),
-              ] else if (_showCreate) ...[
-                Text('CREATE GROUP', style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    color: NeonTheme.onSurfaceVariant, letterSpacing: 2)),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: _nameCtrl,
-                  autofocus: true,
-                  style: const TextStyle(color: NeonTheme.onBackground),
-                  decoration: const InputDecoration(
-                    hintText: 'Group name (e.g. Goa Trip)',
-                    hintStyle: TextStyle(color: NeonTheme.onSurfaceVariant),
-                    enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: NeonTheme.primary)),
-                    focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: NeonTheme.primary, width: 2)),
-                  ),
-                ),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(width: 40, height: 4,
+                    decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2))),
                 const SizedBox(height: 20),
-                SizedBox(
-                  width: double.infinity,
-                  child: NeonButton(
-                    isPrimary: true,
-                    onPressed: () {
-                      if (_nameCtrl.text.trim().isEmpty || widget.user == null) return;
-                      final newGroup = Group(
-                        id: const Uuid().v4(),
-                        name: _nameCtrl.text.trim(),
-                        inviteCode: const Uuid().v4().substring(0, 6).toUpperCase(),
-                        members: [widget.user.id],
-                        createdAt: DateTime.now(),
-                      );
-                      widget.firestore.createGroup(newGroup);
-                      Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('✅ "${newGroup.name}" created! Invite code: ${newGroup.inviteCode}')),
-                      );
-                    },
-                    child: const Text('Create Group', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                if (!_showCreate && !_showJoin) ...[
+                  Text('ADD A GROUP', style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      color: NeonTheme.onSurfaceVariant, letterSpacing: 2)),
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
+                    child: NeonButton(
+                      isPrimary: true,
+                      onPressed: () => setState(() => _showCreate = true),
+                      child: const Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                        Icon(Icons.group_add),
+                        SizedBox(width: 10),
+                        Text('Create New Group', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      ]),
+                    ),
                   ),
-                ),
-              ] else if (_showJoin) ...[
-                Text('JOIN GROUP', style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    color: NeonTheme.onSurfaceVariant, letterSpacing: 2)),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: _codeCtrl,
-                  autofocus: true,
-                  textCapitalization: TextCapitalization.characters,
-                  style: const TextStyle(color: NeonTheme.onBackground, letterSpacing: 4, fontSize: 22, fontWeight: FontWeight.bold),
-                  decoration: const InputDecoration(
-                    hintText: 'XXXXXX',
-                    hintStyle: TextStyle(color: NeonTheme.onSurfaceVariant, letterSpacing: 4),
-                    enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: NeonTheme.primary)),
-                    focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: NeonTheme.primary, width: 2)),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: NeonButton(
+                      isPrimary: false,
+                      onPressed: () => setState(() => _showJoin = true),
+                      child: const Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                        Icon(Icons.login),
+                        SizedBox(width: 10),
+                        Text('Join with Invite Code', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      ]),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 20),
-                SizedBox(
-                  width: double.infinity,
-                  child: NeonButton(
-                    isPrimary: true,
-                    onPressed: () {
-                      final code = _codeCtrl.text.trim().toUpperCase();
-                      if (code.isEmpty || widget.user == null) return;
-                      final joined = widget.firestore.joinGroupByCode(code, widget.user.id);
-                      Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(joined ? '✅ Joined the group!' : '❌ No group found with code "$code"')),
-                      );
-                    },
-                    child: const Text('Join Group', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                ] else if (_showCreate) ...[
+                  Text('CREATE GROUP', style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      color: NeonTheme.onSurfaceVariant, letterSpacing: 2)),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: _nameCtrl,
+                    autofocus: true,
+                    style: const TextStyle(color: NeonTheme.onBackground),
+                    decoration: const InputDecoration(
+                      hintText: 'Group name (e.g. Goa Trip)',
+                      hintStyle: TextStyle(color: NeonTheme.onSurfaceVariant),
+                      enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: NeonTheme.primary)),
+                      focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: NeonTheme.primary, width: 2)),
+                    ),
                   ),
-                ),
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    width: double.infinity,
+                    child: NeonButton(
+                      isPrimary: true,
+                      onPressed: () {
+                        if (_nameCtrl.text.trim().isEmpty || widget.user == null) return;
+                        final newGroup = Group(
+                          id: const Uuid().v4(),
+                          name: _nameCtrl.text.trim(),
+                          inviteCode: const Uuid().v4().substring(0, 6).toUpperCase(),
+                          members: [widget.user.id],
+                          createdAt: DateTime.now(),
+                        );
+                        widget.firestore.createGroup(newGroup);
+                        Navigator.pop(context);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('✅ "${newGroup.name}" created! Invite code: ${newGroup.inviteCode}')),
+                        );
+                      },
+                      child: const Text('Create Group', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    ),
+                  ),
+                ] else if (_showJoin) ...[
+                  Text('JOIN GROUP', style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      color: NeonTheme.onSurfaceVariant, letterSpacing: 2)),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: _codeCtrl,
+                    autofocus: true,
+                    textCapitalization: TextCapitalization.characters,
+                    style: const TextStyle(color: NeonTheme.onBackground, letterSpacing: 4, fontSize: 22, fontWeight: FontWeight.bold),
+                    decoration: const InputDecoration(
+                      hintText: 'XXXXXX',
+                      hintStyle: TextStyle(color: NeonTheme.onSurfaceVariant, letterSpacing: 4),
+                      enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: NeonTheme.primary)),
+                      focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: NeonTheme.primary, width: 2)),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    width: double.infinity,
+                    child: NeonButton(
+                      isPrimary: true,
+                      onPressed: () {
+                        final code = _codeCtrl.text.trim().toUpperCase();
+                        if (code.isEmpty || widget.user == null) return;
+                        final joined = widget.firestore.joinGroupByCode(code, widget.user.id);
+                        Navigator.pop(context);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(joined ? '✅ Joined the group!' : '❌ No group found with code "$code"')),
+                        );
+                      },
+                      child: const Text('Join Group', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    ),
+                  ),
+                ],
               ],
-            ],
+            ),
           ),
         ),
       ),
