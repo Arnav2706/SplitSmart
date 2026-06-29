@@ -48,8 +48,9 @@ class LocalStorageService {
       }
     }
 
-    // Seed with demo groups + expenses on first run
-    if (_groups.isEmpty) {
+    // Seed with demo groups + expenses on first run or if new seed is missing
+    final bool hasDemoTrip = _groups.any((g) => g.id == 'demo_trip');
+    if (_groups.isEmpty || !hasDemoTrip) {
       final yesterday = DateTime(2026, 6, 25);
       final todayNoon = DateTime(2026, 6, 26, 12, 0);
 
@@ -72,6 +73,13 @@ class LocalStorageService {
           members: [uid, rahul, priya],
           inviteCode: 'FLAT01',
           createdAt: DateTime(2026, 6, 20),
+        ),
+        Group(
+          id: 'demo_trip',
+          name: 'Weekend Getaway 🚗',
+          members: [uid, rahul, priya, amit],
+          inviteCode: 'TRIP42',
+          createdAt: DateTime(2026, 6, 25),
         ),
       ];
 
@@ -170,6 +178,31 @@ class LocalStorageService {
             ExpenseSplit(userId: priya, share: 45000),
           ],
           date: todayNoon,
+        ),
+        // Weekend Getaway expenses (User owes Rahul)
+        Expense(
+          id: 'e9', groupId: 'demo_trip', description: 'Villa Booking',
+          amount: 1200000, category: 'Travel', paidBy: rahul,
+          splitType: SplitType.equal,
+          splits: [
+            ExpenseSplit(userId: uid, share: 300000),
+            ExpenseSplit(userId: rahul, share: 300000),
+            ExpenseSplit(userId: priya, share: 300000),
+            ExpenseSplit(userId: amit, share: 300000),
+          ],
+          date: yesterday,
+        ),
+        Expense(
+          id: 'e10', groupId: 'demo_trip', description: 'Fuel & Tolls',
+          amount: 400000, category: 'Transport', paidBy: amit,
+          splitType: SplitType.equal,
+          splits: [
+            ExpenseSplit(userId: uid, share: 100000),
+            ExpenseSplit(userId: rahul, share: 100000),
+            ExpenseSplit(userId: priya, share: 100000),
+            ExpenseSplit(userId: amit, share: 100000),
+          ],
+          date: yesterday,
         ),
       ];
 
